@@ -148,10 +148,11 @@ def setup_logger():
 
 
 def run(cmd, verbose=False, **kwargs):
-    if verbose:
-        return subprocess.run(cmd, check=True, text=True, **kwargs)
+    check = kwargs.pop("check", True)
+    if verbose or kwargs.get("capture_output"):
+        return subprocess.run(cmd, check=check, text=True, **kwargs)
     else:
-        return subprocess.run(cmd, check=True, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
+        return subprocess.run(cmd, check=check, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
 
 
 def download_with_etag(url: str) -> Path:
@@ -274,7 +275,7 @@ def verify_python(required_version_str):
 
 def verify_vscode(verbose=False):
     try:
-        output = run(["code", "--version"], capture_output=True, verbose=True).stdout.strip()
+        output = run(["code", "--version"], capture_output=True).stdout.strip()
         logger.info(f"VS Code OK: {output.splitlines()[0]}")
         return True
     except Exception as e:
@@ -284,7 +285,7 @@ def verify_vscode(verbose=False):
 
 def verify_git(verbose=False):
     try:
-        output = run(["git", "--version"], capture_output=True, verbose=True).stdout.strip()
+        output = run(["git", "--version"], capture_output=True).stdout.strip()
         logger.info(f"GIT OK: {output.splitlines()[0]}")
         return True
     except Exception as e:
@@ -515,7 +516,24 @@ def main():
         if has_git:
             os.chdir(course_path)
             logger.info(f"Updating project: {course_path}")
-            run(["git", "pull"], verbose=args.verbose)
+            try:
+                # run(["git", "pull"], verbose=args.verbose)
+                # 1. Stash local changes if any
+                run(["git", "stash", "push", "-m", "autostash before update"], verbose=args.verbose)
+                # 2. Fetch tags (!moved tags are not updated)
+                run(["git", "fetch", "--tags"], verbose=args.verbose)
+                # 3. Fetch latest from origin
+                run(["git", "fetch", "origin"], verbose=args.verbose)
+                # 4. Reset current branch to match remote (remote wins)
+                current_branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True).stdout.strip()
+                run(["git", "reset", "--hard", f"origin/{current_branch}"], verbose=args.verbose)
+                # 5. Apply stashed changes if possible
+                stash_result = run(["git", "stash", "pop"], verbose=args.verbose, capture_output=True, check=False)
+                if 'conflict' in stash_result.stdout.lower() or 'conflict' in stash_result.stderr.lower():
+                    raise RuntimeError("Merge conflict occurred while applying stashed changes")
+            except Exception as e:
+                logger.error(f"Update failed: {e}")
+                logger.error("Your local changes may still be stashed. Resolve conflicts manually if needed.")
         else:
             logger.warning("Git command not found, cannot update existing git project")
     else:
