@@ -104,6 +104,7 @@ class LogFormatter(logging.Formatter):
         #return super().format(record)
         return f"{prefix}{label} {message}"
 
+
 class ProgressBar:
     SPINNER = "|/-\\"
 
@@ -204,44 +205,53 @@ def download_github_zip(url):
     try:
         return download_with_etag(url)
     except Exception as e:
-        raise Exception(f"Download failed: {url}\n{e}")
+        raise RuntimeError(f"Download failed: {url}\n{e}")
 
-def extract_archive(path, extract_to, overwrite=False, verbose=False):
+
+def extract_archive(path, extract_to, overwrite=False, verbose=False, force_overwrite={"update.py"}):
     logger.info(f"Extract class materials: {extract_to}")
     if extract_to.exists():
         if overwrite:
             logger.warning(f"Overwrite existing files")
         else:
             logger.warning(f"Existing files are not updated (use --force)")
- 
+
     with zipfile.ZipFile(str(path), 'r') as zip_ref:
         members = zip_ref.infolist()
         root_prefix = members[0].filename.split('/')[0] + '/'
         progress = ProgressBar(width=10, fill='*', verbose=verbose)
         progress.update(0)
+
         for i, member in enumerate(members, 1):
-            relative_path = os.path.relpath(member.filename, root_prefix)
-            target_path = os.path.join(extract_to, relative_path)
             if member.is_dir():
                 continue
-            if overwrite or not os.path.exists(target_path):
+
+            member_relpath = os.path.relpath(member.filename, root_prefix)
+            target_path = os.path.join(extract_to, member_relpath)
+
+            if overwrite or not os.path.exists(target_path) or member_relpath in force_overwrite:
                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
                 with open(target_path, 'wb') as f:
                     f.write(zip_ref.read(member))
             else:
                 logger.debug(f"Skipped existing file: {target_path}")
-            progress.update(int(10.0/len(members)*i))
+
+            progress.update(int(10.0 / len(members) * i))
+
         progress.finish()
 
 
-def git_clone_with_retries(url, dest, timeout=15, verbose=False):
+def git_clone_with_retries(url, dest, timeout=15, verbose=False, deep=False):
     logger.info(f"Cloning project: {url}")
     progress = ProgressBar(width=timeout, fill='X', verbose=verbose)
     start = time.time()
     i = 0
     while time.time() - start < timeout:
         try:
-            run(["git", "clone", "--depth", "1", "--branch", "main", "--single-branch", url, str(dest)], verbose=verbose)
+            if deep:
+                run(["git", "clone", url, str(dest)], verbose=verbose)
+            else:
+                run(["git", "clone", "--depth", "1", "--single-branch", url, str(dest)], verbose=verbose)
             return
         except subprocess.CalledProcessError:
             i += 1
@@ -249,14 +259,15 @@ def git_clone_with_retries(url, dest, timeout=15, verbose=False):
             time.sleep(1)
     progress.finish()
     if not Path(dest).exists():
-        raise Exception(f"Failed to clone {url}")
+        raise RuntimeError(f"Failed to clone {url}")
+
 
 def verify_python(required_version_str):
     required_major, required_minor = map(int, required_version_str.split(".")[:2])
     current_major, current_minor = sys.version_info[:2]
 
     if (current_major, current_minor) != (required_major, required_minor):
-        raise Exception(f"Python {required_major}.{required_minor} required, found {current_major}.{current_minor}")
+        raise RuntimeError(f"Python {required_major}.{required_minor} required, found {current_major}.{current_minor}")
 
     logger.info(f"Python OK: {current_major}.{current_minor}")
 
@@ -408,6 +419,7 @@ def setup_vscode(project_path, venv_path):
     with open(vscode_dir / "tasks.json", "w") as f:
         json.dump(tasks, f, indent=4)
 
+
 def setup_vscode_global(code_user_path):
     if not code_user_path.is_dir():
         return
@@ -466,11 +478,14 @@ def manage_vscode_extensions(verbose=False):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--base", metavar="PATH", type=Path, help="Directory where the class folder will be created", default=os.environ.get("ENG209_DIR", DEFAULT_TARGET_FOLDER))
-    parser.add_argument("--clone", action="store_true", help="Clone the class folder repository (for instructors or advanced users)")
-    parser.add_argument("--force", action="store_true", help="Force update: overwrite existing files in the class folder")
-    parser.add_argument("--verbose", action="store_true", help="Show verbose output of subprocess commands")
+    parser = argparse.ArgumentParser(description="Initialize and configure the ENG209 programming environment")
+    parser.add_argument("--base", metavar="PATH", type=Path,
+        help=f"Directory where the class folder will be created (default: {os.environ.get('ENG209_DIR', DEFAULT_TARGET_FOLDER)})",
+        default=os.environ.get("ENG209_DIR", DEFAULT_TARGET_FOLDER))
+    parser.add_argument("--clone", action="store_true", help="Shallow clone (main branch). Default is to copy from github archive.")
+    parser.add_argument("--deep-clone", action="store_true", help="Full clone (all branches, full history)")
+    parser.add_argument("--force", action="store_true", help="Force overwrite when copying from archive (ignored with --clone/--deep-clone)")
+    parser.add_argument("--verbose", action="store_true", help="Show verbose output of subprocess commands.")
     args = parser.parse_args()
 
     global logger
@@ -481,18 +496,18 @@ def main():
     has_vscode = verify_vscode(verbose=args.verbose)
 
     if not args.base.exists():
-        raise Exception(f"Target folder {args.base} does not exist")
+        raise RuntimeError(f"Target folder {args.base} does not exist")
     logger.info(f"Base folder OK: {args.base}")
 
     course_path = args.base / COURSE_NAME
 
-    if args.clone:
+    if args.clone or args.deep_clone:
         if not (course_path / ".git").is_dir():
             if not has_git:
-                raise Exception(f"git command not found, cannot clone project")
+                raise RuntimeError(f"git command not found, cannot clone project")
             if course_path.exists():
-                raise Exception(f"cannot clone ({course_path} exists and is not a git repository)")
-            git_clone_with_retries(GITHUB_PROJECT + ".git", course_path, verbose=args.verbose)
+                raise RuntimeError(f"cannot clone ({course_path} exists and is not a git repository)")
+            git_clone_with_retries(GITHUB_PROJECT + ".git", course_path, verbose=args.verbose, deep=args.deep_clone)
         else:
             logger.info(f"Using existing project: {course_path}")
 
