@@ -46,7 +46,7 @@ VENV_DIR = "venv"
 PACKAGES = [
     "ipykernel", "ipywidgets", "jupyterlab-latex", "matplotlib", "plotly",
     "numpy", "pandas", "scikit-learn", "func_timeout", "bpython", "mypy", "nbformat",
-    "pooch", "tqdm", "pandas-stubs",
+    "pooch", "tqdm", "pandas-stubs", 'scipy-stubs'
 ]
 VSCODE_EXTENSIONS = {
     "install": [
