@@ -551,14 +551,16 @@ def main():
 
     if has_vscode:
         manage_vscode_extensions(verbose=args.verbose)
-        logger.info("Launching VS Code...")
-        run(["code", str(course_path)], verbose=args.verbose)
 
     update_script = course_path / f"update.py"
     if update_script.exists():
         logger.info("Running post-install update")
         python_path = (venv_path / "Scripts" / "python3.exe") if os.name == "nt" else (venv_path / "bin" / "python3")
         run([ python_path, update_script ], verbose=args.verbose)
+
+    if has_vscode:
+        logger.info("Launching VS Code...")
+        run(["code", str(course_path)], verbose=args.verbose)
 
     logger.info("Project setup complete...") # ✅
     logger.info("You're ready to start coding! 🚀")
