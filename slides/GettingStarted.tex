@@ -13,8 +13,9 @@
 \usepackage{graphicx}
 \usepackage{a4wide}
 \usepackage{geometry}
-\geometry{a4paper, top=1.5cm, left=2cm, right=3.0cm, bottom=1.5cm}
-
+\geometry{a4paper, top=1.5cm, left=2cm, right=2.0cm, bottom=1.5cm}
+\usepackage{listings}
+\usepackage{xcolor}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{enumerate}
@@ -50,7 +51,7 @@
 
 \DeclareRobustCommand{\cmdkey}{\raisebox{-.06em}{\includegraphics[height=.75em]{command.pdf}}}
 
-\newcommand\•{$\cdot$}
+%\newcommand\•{$\cdot$}
 \newcommand\code[1]{\texttt{\textbf{\small #1}}}
 \newcommand\ui[1]{\textsf{#1}}
 \newcommand{\marginnote}[1]{\marginpar{\flushleft{{\scriptsize ~\\} \textsf{#1}}}}
@@ -60,8 +61,7 @@
 {
 	\sffamily
 	{\Large \bfseries ENG-209 --- Getting Started}
-	{\hfill 9 septembre 2024}
-
+	{\hfill 8 Septembre 2025}
 }
 
 
@@ -95,27 +95,42 @@ Notez bien qu'à chaque logout, vos données sur l’ordinateur sont \textbf{eff
 
 Faites donc attention à toujours travailler dans votre dossier réseau!
 
-Vous pouvez aussi accéder à \code{myfiles} en le montant comme dossier réseau sur votre propre machine. Si vous n'êtes pas sur le réseau de l'EPFL, vous devrez vous connecter au VPN d'abord. Plus d'info: \url{http://mynas.epfl.ch}; \url{http://studinfo.epfl.ch/core/index.asp?article=18}; \url{https://vpn.epfl.ch}.
+Vous pouvez aussi accéder à \code{myfiles} en le montant comme dossier réseau sur votre propre machine. Si vous n'êtes pas sur le réseau de l'EPFL, vous devrez vous connecter au VPN d'abord.
+
+Plus d'info: \url{http://mynas.epfl.ch}; \url{http://studinfo.epfl.ch/core/index.asp?article=18}; \url{https://vpn.epfl.ch}.
 
 \subsubsection*{Configuration}
 
-Voici la procédure pour configurer le tout sur un poste de travail virtuel. \textbf{Ceci, sauf indication contraire, est à faire une seule fois lors de la première séance d'exercices:}
+Voici la procédure pour configurer le tout sur un poste de travail virtuel la première semaine.
 \begin{enumerate}
 \item Loggez-vous sur une machine virtuelle (via une des machines de la salle d'exercice ou via votre propre machine par l'intermédiaire de VMware Horizon Client comme indiqué sur \url{https://vdi.epfl.ch}).
-\item Lancez \ui{Firefox} depuis la barre latérale, puis allez sur la page Moodle du cours et téléchargez (dans votre dossier \ui{Downloads}, par défaut) le fichier de configuration \code{setup.sh}.
 \item Ouvrez l'application \ui{Terminal} (par exemple via le lanceur en bas de la barre latérale), puis tapez exactement ceci, ligne par ligne et en faisant bien attention aux espaces:\\
-\code{cd Downloads}\\
-\code{chmod +x setup.sh}\\
-\code{./setup.sh}
-\item Observez la machine travailler pour vous. Cela prend un certain temps. À la fin de l'opération, s'il n'y a pas eu d'erreur, fermez la fenêtre du terminal puis lancez \ui{Visual Studio Code} (aussi depuis le lanceur en bas à gauche). Choisissez ensuite \ui{File} $\rightarrow$ \ui{Open Folder}, puis naviguez vers dossier workspace, qui ressemble à ceci:\\
-\code{~/Desktop/myfiles/ENG209\_XXXX/}.\\
+\begin{lstlisting}[language=Bash]
+curl 'https://raw.githubusercontent.com/eng209/eng209_2025/refs/heads/main/setup.sh' | bash -s
+\end{lstlisting}
+\item Observez la machine travailler pour vous. Cela prend un certain temps. À la fin de l'opération, s'il n'y a pas eu d'erreur, fermez la fenêtre du terminal puis lancez \ui{Visual Studio Code} (aussi depuis le lanceur en bas à gauche).
+\item Choisissez ensuite \ui{File} $\rightarrow$ \ui{Open Folder}, puis naviguez vers dossier workspace, qui ressemble à ceci:\\
+\code{~/Desktop/myfiles/eng209\_2025/}.\\
 Attention à bien ouvrir ce dossier et pas myfiles directement ou un autre.
-\item Chaque semaine, récupérez les séries et les éventuels corrigés depuis Moodle et glissez-les dans le dossier de votre workspace.
 \end{enumerate}
 
-Rappel: cette procédure est à effectuer uniquement la première fois que vous accédez à votre machine virtuelle. Les fois suivantes, vous ouvrez directement VS Code, puis faites \ui{Open Workspace…} si nécessaire pour retrouver l'ensemble de vos fichiers de travail.
+Rappel: cette procédure est à effectuer uniquement la première fois que vous accédez à votre machine virtuelle.
 
-Si vous souhaitez ne pas travailler sur cette infrastructure, c'est possible de tout faire en local sur votre propre machine. Mais c'est à vous de la configurer; nous vous aidons dans la mesure du possible mais ce n'est pas une configuration officiellement «prise en charge». Sachez aussi que l'examen de mi-semestre se déroulera obligatoirement sur les machine virtuelles avec les postes de l'EPFL afin que les conditions de passation soient identiques pour tout le monde.
+\subsubsection*{Chaque semaine}
 
+Les fois suivantes, récupérez les séries et les éventuels corrigés depuis Moodle et glissez-les dans le dossier de votre workspace:
+
+\begin{enumerate}
+\item Dans l'application \ui{Terminal} tapez exactement ceci, ligne par ligne:
+\\
+\begin{lstlisting}[language=Bash]
+cd ~/Desktop/myfiles/eng209_2025
+./setup.sh
+\end{lstlisting}
+
+\item Ouvrez directement VS Code, et faites \ui{Open Workspace…} si nécessaire pour retrouver l'ensemble de vos fichiers de travail
+\end{enumerate}
+
+Si vous souhaitez ne pas travailler sur cette infrastructure, c'est possible de tout faire en local sur votre propre machine. Mais c'est à vous de la configurer; nous vous aidons dans la mesure du possible mais ce n'est pas une configuration officiellement "prise en charge". Sachez aussi que l'examen de mi-semestre se déroulera obligatoirement sur les machine virtuelles avec les postes de l'EPFL afin que les conditions de passation soient identiques pour tout le monde.
 
 \end{document}
