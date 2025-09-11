@@ -467,6 +467,7 @@ def manage_vscode_extensions(verbose=False):
                 run(["code", "--install-extension", ext ], verbose=verbose)
             else:
                 run(["code", "--install-extension", ext, "--force"], verbose=verbose)
+            time.sleep(0.5)
         except subprocess.CalledProcessError:
             fail_install += [ext]
         i += 1
@@ -475,6 +476,7 @@ def manage_vscode_extensions(verbose=False):
     for ext in VSCODE_EXTENSIONS["uninstall"]:
         try:
             run(["code", "--uninstall-extension", ext], verbose=verbose)
+            time.sleep(0.5)
         except subprocess.CalledProcessError:
             fail_uninstall += [ext]
         i += 1
