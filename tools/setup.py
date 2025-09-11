@@ -49,9 +49,10 @@ PACKAGES = [
     "pooch", "tqdm", "pandas-stubs", 'scipy-stubs'
 ]
 VSCODE_EXTENSIONS = {
+    # pinned versions are known to work with code 1.101.2
     "install": [
-        "ms-python.python", "ms-python.black-formatter", "ms-python.mypy-type-checker",
-        "ms-toolsai.jupyter", "matangover.mypy", "jock.svg"
+        "ms-python.python@2025.12.0", "ms-python.black-formatter@2025.2.0", "ms-python.mypy-type-checker@2025.2.0",
+        "ms-toolsai.jupyter@2025.7.0", "matangover.mypy@0.4.2", "jock.svg@1.5.4"
     ],
     "uninstall": ["formulahendry.code-runner"]
 }
@@ -337,16 +338,20 @@ def setup_vscode(project_path, venv_path):
         "workbench.tree.indent": 20,
         # -- Specify a different default .env path for env variables
         # "python.envFile": (Path("${workspaceFolder}") / ".env").as_posix(),
-        "python.defaultInterpreterPath": str(venv_bin / "python"),
+        # -- Specify a default python interpreter
+        "python.venvFolders": [ "venv" ],
+        # -- Specify a default python interpreter
+        "python.defaultInterpreterPath": str(Path("${workspaceFolder}") / venv_bin / "python"),
         # -- Include the venv python kernels specs under jupyter kernels, using the custom display name
         #    (Note: even if not set it is listed in python environments as python3..., which less ambiguous).
         #"jupyter.jupyterServerKernelSearchPaths": [
             #"${workspaceFolder}/venv/share/jupyter/kernels",
         #],
-        # -- Limit environments, otherwise it includes others (conda etc.), which is source of errors.
-        "python-envs.pythonProjects": [
-            "${workspaceFolder}",
-        ],
+        # -- Limit environments so that it does not include others like global conda etc.
+        # -- requires: ms-python.vscode-python-environment-manager
+        # "python-envs.pythonProjects": [
+        #    { "path": "eng209_2025", "envManager": "ms-python.python:venv", "packageManager": "ms-python.python:pip" }
+        #],
         # -- Experimental vscode A/B testing is enabled by default, turn it off
         "python.experiments.enabled": False,
         # -- Activate environment when terminal is opened, but do not change it in existing terminals
@@ -458,7 +463,10 @@ def manage_vscode_extensions(verbose=False):
     progress.update(i)
     for ext in VSCODE_EXTENSIONS["install"]:
         try:
-            run(["code", "--install-extension", ext, "--force"], verbose=verbose)
+            if "@" in ext:
+                run(["code", "--install-extension", ext ], verbose=verbose)
+            else:
+                run(["code", "--install-extension", ext, "--force"], verbose=verbose)
         except subprocess.CalledProcessError:
             fail_install += [ext]
         i += 1
