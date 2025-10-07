@@ -208,3 +208,7 @@ __marimo__/
 
 # MacOS stuff
 .DS_Store
+*.synctex.gz
+*.out
+*.aux
+*.pdf

@@ -138,8 +138,9 @@ Si vous souhaitez ne pas travailler sur cette infrastructure, c'est possible de 
 \begin{enumerate}
 \item L’environnement Python n’est pas disponible dans VS Code
 \begin{enumerate} 
-\item Vous êtes sur une machine virtuelle via la VDI: utilisez-vous bien l’image IC-CO-IN-INJ-2024-Fall ?
+\item Vous êtes sur une machine virtuelle via la VDI: utilisez-vous bien l’image IC-CO-IN-INJ-202x-Fall ?
 \item Vous êtes sur votre ordinateur personnel et utilisez votre propre version de VS Code: il est possible que certaines extensions ne soient pas compatibles avec votre version de VS Code. Contactez-nous ; nous vous aiderons dans la mesure du possible, mais cette configuration n’est pas officiellement "prise en charge".
+\item Vous avez peut-être d'anciennes extensions VS Code même si vous êtes sur une machine virtuelle de l'EPFL (autre/ancien cours par exemple), notamment d'autres extensions liées à Python qui entrent en conflit avec les extensions officielle de Microsoft. Si c'est le cas, désinstallez toutes les extensions liées à Python manuellement depuis l'interface de VS Code et refaites tourner le setup depuis le terminal.
 \item Vous accédez au dossier Desktop/myfiles depuis plusieurs machines en même temps (par exemple une fois via la VM, une autre fois via votre ordinateur): cela peut provoquer des conflits de lockfiles. N’utilisez qu’une seule machine à la fois pour accéder au dossier.
 Si le problème persiste, ouvrez un terminal et entrez les commandes suivantes ligne par ligne, en faisant bien attention aux espaces :
 \begin{lstlisting}[language=Bash]
