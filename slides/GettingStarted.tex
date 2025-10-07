@@ -104,7 +104,7 @@ Plus d'info: \url{http://mynas.epfl.ch}; \url{http://studinfo.epfl.ch/core/index
 Voici la procédure pour configurer le tout sur un poste de travail virtuel la première semaine.
 \begin{enumerate}
 \item Loggez-vous sur une machine virtuelle (via une des machines de la salle d'exercice ou via votre propre machine par l'intermédiaire de VMware Horizon Client comme indiqué sur \url{https://vdi.epfl.ch}).
-\item Ouvrez l'application \ui{Terminal} (par exemple via le lanceur en bas de la barre latérale), puis tapez exactement ceci, ligne par ligne et en faisant bien attention aux espaces:\\
+\item Ouvrez l'application \ui{Terminal} (par exemple via le lanceur en bas de la barre latérale), puis tapez exactement ceci:\\
 \begin{lstlisting}[language=Bash]
 curl 'https://raw.githubusercontent.com/eng209/eng209_2025/refs/heads/main/setup.sh' | bash -s
 \end{lstlisting}
@@ -132,5 +132,22 @@ cd ~/Desktop/myfiles/eng209_2025
 \end{enumerate}
 
 Si vous souhaitez ne pas travailler sur cette infrastructure, c'est possible de tout faire en local sur votre propre machine. Mais c'est à vous de la configurer; nous vous aidons dans la mesure du possible mais ce n'est pas une configuration officiellement "prise en charge". Sachez aussi que l'examen de mi-semestre se déroulera obligatoirement sur les machine virtuelles avec les postes de l'EPFL afin que les conditions de passation soient identiques pour tout le monde.
+
+\subsubsection*{En cas de problèmes}
+
+\begin{enumerate}
+\item L’environnement Python n’est pas disponible dans VS Code
+\begin{enumerate} 
+\item Vous êtes sur une machine virtuelle via la VDI: utilisez-vous bien l’image IC-CO-IN-INJ-2024-Fall ?
+\item Vous êtes sur votre ordinateur personnel et utilisez votre propre version de VS Code: il est possible que certaines extensions ne soient pas compatibles avec votre version de VS Code. Contactez-nous ; nous vous aiderons dans la mesure du possible, mais cette configuration n’est pas officiellement "prise en charge".
+\item Vous accédez au dossier Desktop/myfiles depuis plusieurs machines en même temps (par exemple une fois via la VM, une autre fois via votre ordinateur): cela peut provoquer des conflits de lockfiles. N’utilisez qu’une seule machine à la fois pour accéder au dossier.
+Si le problème persiste, ouvrez un terminal et entrez les commandes suivantes ligne par ligne, en faisant bien attention aux espaces :
+\begin{lstlisting}[language=Bash]
+cd ~/Desktop/myfiles/eng209_2025
+rm -rf ./venv
+./setup.sh
+\end{lstlisting}
+\end{enumerate}
+\end{enumerate}
 
 \end{document}
