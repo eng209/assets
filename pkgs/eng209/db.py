@@ -1,6 +1,7 @@
 import getpass
 import sqlite3
 import uuid
+from pathlib import Path
 from enum import Enum
 
 from . import get_project_root, _marker
@@ -8,6 +9,7 @@ from .models import *
 
 
 def __initialize():
+    (get_project_root() / _marker).mkdir(parents=False, exist_ok=True)
     with sqlite3.connect(get_project_root() / _marker / "sys.db") as conn:
         cursor = conn.cursor()
         cursor.execute(

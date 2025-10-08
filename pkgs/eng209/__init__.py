@@ -4,27 +4,37 @@ import sysconfig
 from collections.abc import Sequence
 
 
-# Find parent of quiz folder
-def __detect_project_root(*markers: str | Sequence[str]) -> Path:
-    if len(markers) == 1 and isinstance(markers[0], (list, tuple)):
-        _markers = markers[0]
-    else:
-        _markers = markers
+def __find_project_root(*markers: str | Sequence[str]) -> Path:
+    """
+    Find parent of quiz folder, we assume that 
+    """
+    try:
+        if os.environ.get("ENG209_HOME"):
+            path = Path(os.environ.get("ENG209_HOME")).resolve()
+            if path.is_dir():
+                return path
 
-    for file in [__file__, sysconfig.get_paths().get("purelib", "")]:
-        path = Path(file).absolute()
-        for depth in range(0, 10):
-            path = path.parent
-            for marker in _markers:
-                if (path / marker).exists():
-                    return path
+        if len(markers) == 1 and isinstance(markers[0], (list, tuple)):
+            _markers = markers[0]
+        else:
+            _markers = markers
 
-    return Path(os.environ.get("QUIZZ_HOME", Path.home()))
+        for file in [__file__, sysconfig.get_paths().get("purelib", "")]:
+            path = Path(file).resolve()
+            for depth in range(0, 10):
+                path = path.parent
+                for marker in _markers:
+                    if (path / marker).exists():
+                        return path
+    except:
+        pass
+
+    return Path.home()
 
 
 _marker = ".qdb"
 
-__project_root: Path = __detect_project_root(_marker)
+__project_root: Path = __find_project_root(_marker, '.git', '.vscode')
 
 
 def get_project_root() -> Path:
@@ -33,10 +43,10 @@ def get_project_root() -> Path:
 
 def set_project_root(path: str):
     global __project_root
-    _path = Path(path)
+    _path = Path(path).resolve()
     if not _path.is_dir():
         raise ValueError(f"Invalid path: {path}")
-    __project_root = _path.absolute()
+    __project_root = _path
 
 
 __all__ = ["get_project_root", "set_project_root", "_marker"]
