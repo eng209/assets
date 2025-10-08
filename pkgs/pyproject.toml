@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = ["eng209"]
+include = ["eng209/py.typed"]
+
+[project]
+name = "eng209-epfl"
+version = "0.1.0"
+authors = [
+  { name="Eric Bouillet", email="eric.bouillet@epfl.ch" },
+]
+description = "ENG209 EPFL CH Utilities"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Education"
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "ipywidgets>=8.1.0",
+  "ipython>=9.4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/eng209/assets"
+Issues = "https://github.com/eng209/assets/issuess"
