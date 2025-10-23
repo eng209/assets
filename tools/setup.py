@@ -30,25 +30,25 @@ import time
 import urllib.request
 import venv
 import zipfile
+from datetime import date
 from http.client import HTTPSConnection
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 
 # === Config ===
-PYTHON_VERSION = "3.12.2"
-DEFAULT_TARGET_FOLDER = os.environ.get("DEFAULT_TARGET_FOLDER", Path.home() / "Desktop" / "myfiles")
-SEMESTER = "2025"
-GITHUB_PROJECT = os.environ.get("GITHUB_PROJECT", f"https://github.com/eng209/eng209_2025")
-CODE_ARCHIVE = f"{GITHUB_PROJECT}/archive/main.zip"
-COURSE_NAME = f"eng209_{SEMESTER}"
-COURSE_NAME = os.environ.get("COURSE_NAME", f"eng209_2025")
-VENV_DIR = "venv"
-PACKAGES = [
+PYTHON_VERSION: str = "3.12.2"
+DEFAULT_TARGET_FOLDER: str = os.environ.get("DEFAULT_TARGET_FOLDER", str((Path.home() / "Desktop" / "myfiles").resolve()))
+SEMESTER: str = os.environ.get("SEMESTER", str(date.today().year))
+GITHUB_PROJECT: str = os.environ.get("GITHUB_PROJECT", f"https://github.com/eng209/eng209_{SEMESTER}")
+CODE_ARCHIVE: str = f"{GITHUB_PROJECT}/archive/main.zip"
+COURSE_NAME: str = os.environ.get("COURSE_NAME", f"eng209_{SEMESTER}")
+VENV_DIR: str = "venv"
+PACKAGES: list[str] = [
     "ipykernel", "ipywidgets", "jupyterlab-latex", "matplotlib", "plotly",
     "numpy", "pandas", "scikit-learn", "func_timeout", "bpython", "mypy", "nbformat",
     "pooch", "tqdm", "pandas-stubs", 'scipy-stubs'
 ]
-VSCODE_EXTENSIONS = {
+VSCODE_EXTENSIONS: dict = {
     # pinned versions are known to work with code 1.101.2
     "install": [
         "ms-python.python@2025.12.0", "ms-python.black-formatter@2025.2.0", "ms-python.mypy-type-checker@2025.2.0",
@@ -81,11 +81,11 @@ class LogFormatter(logging.Formatter):
     RESET = "\033[0m"
     BOLD  = "\033[1m"
 
-    def __init__(self, use_color=True):
+    def __init__(self, use_color: bool=True):
         super().__init__()
         self.use_color = use_color and sys.stdout.isatty()
 
-    def format(self, record):
+    def format(self, record) -> str:
         label = self.SYMBOLS.get(record.levelno, "?")
         message = record.getMessage()
         prefix = ''
@@ -107,20 +107,20 @@ class LogFormatter(logging.Formatter):
 
 
 class ProgressBar:
-    SPINNER = "|/-\\"
+    __SPINNER = "|/-\\"
 
-    def __init__(self, width, fill='*', verbose=False):
+    def __init__(self, width: int, fill: str='*', verbose: bool=False):
         self.width = width
         self.fill = fill
         self.verbose = verbose
         self.position = 0
         self.is_terminal = sys.stdout.isatty()
 
-    def update(self, progress):
+    def update(self, progress: int):
         if self.verbose or not self.is_terminal:
             return
 
-        spinner_char = self.SPINNER[progress % len(self.SPINNER)]
+        spinner_char = self.__SPINNER[progress % len(self.__SPINNER)]
         dots = '.' * self.width
         fill = self.fill * self.width
 
@@ -138,17 +138,17 @@ class ProgressBar:
             print('\r' + ' ' * (self.width + 5) + '\r', end='', flush=True)
 
 
-def setup_logger():
+def setup_logger() -> logging.Logger:
     logger = logging.getLogger()
     handler = logging.StreamHandler(sys.stdout) # sys.stderr is default
-    formatter = LogFormatter("%(message)s")
+    formatter = LogFormatter(True)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     return logger
 
 
-def run(cmd, verbose=False, **kwargs):
+def run(cmd: list[str], verbose: bool=False, **kwargs):
     check = kwargs.pop("check", True)
     if verbose or kwargs.get("capture_output"):
         return subprocess.run(cmd, check=check, text=True, **kwargs)
@@ -202,7 +202,7 @@ def download_with_etag(url: str) -> Path:
             raise
 
 
-def download_github_zip(url):
+def download_github_zip(url: str) -> Path:
     logger.info(f"Download archive: {url}")
     try:
         return download_with_etag(url)
@@ -210,7 +210,7 @@ def download_github_zip(url):
         raise RuntimeError(f"Download failed: {url}\n{e}")
 
 
-def extract_archive(path, extract_to, overwrite=False, verbose=False, force_overwrite={"update.py"}):
+def extract_archive(path: Path, extract_to: Path, overwrite: bool=False, verbose: bool=False, force_overwrite: set[str]={"update.py"}):
     logger.info(f"Extract class materials: {extract_to}")
     if extract_to.exists():
         if overwrite:
@@ -243,7 +243,7 @@ def extract_archive(path, extract_to, overwrite=False, verbose=False, force_over
         progress.finish()
 
 
-def git_clone_with_retries(url, dest, timeout=15, verbose=False, deep=False):
+def git_clone_with_retries(url: str, dest: Path, timeout: int=15, verbose: bool=False, deep: bool=False):
     logger.info(f"Cloning project: {url}")
     progress = ProgressBar(width=timeout, fill='X', verbose=verbose)
     start = time.time()
@@ -260,11 +260,11 @@ def git_clone_with_retries(url, dest, timeout=15, verbose=False, deep=False):
             progress.update(i)
             time.sleep(1)
     progress.finish()
-    if not Path(dest).exists():
+    if not dest.exists():
         raise RuntimeError(f"Failed to clone {url}")
 
 
-def verify_python(required_version_str):
+def verify_python(required_version_str: str):
     required_major, required_minor = map(int, required_version_str.split(".")[:2])
     current_major, current_minor = sys.version_info[:2]
 
@@ -274,7 +274,7 @@ def verify_python(required_version_str):
     logger.info(f"Python OK: {current_major}.{current_minor}")
 
 
-def verify_vscode(verbose=False):
+def verify_vscode(verbose: bool=False) -> bool:
     try:
         output = run(["code", "--version"], capture_output=True).stdout.strip()
         logger.info(f"VS Code OK: {output.splitlines()[0]}")
@@ -284,7 +284,7 @@ def verify_vscode(verbose=False):
         return False
 
 
-def verify_git(verbose=False):
+def verify_git(verbose: bool=False) -> bool:
     try:
         output = run(["git", "--version"], capture_output=True).stdout.strip()
         logger.info(f"GIT OK: {output.splitlines()[0]}")
@@ -294,7 +294,7 @@ def verify_git(verbose=False):
         return False
 
 
-def create_virtualenv(parent_path):
+def create_virtualenv(parent_path: Path) -> Path:
     venv_path = parent_path / VENV_DIR
     (venv_path / "lib64").mkdir(parents=True, exist_ok=True)
     builder = venv.EnvBuilder(with_pip=True, clear=False, upgrade_deps=True, symlinks=False)
@@ -303,7 +303,7 @@ def create_virtualenv(parent_path):
     return venv_path
 
 
-def install_packages(venv_path, verbose=False):
+def install_packages(venv_path: Path, verbose: bool=False):
     venv_bin = venv_path / ("Scripts" if os.name == "nt" else "bin")
     pip_path = venv_bin / "pip"
     logger.info(f"Installing Python packages to venv")
@@ -323,7 +323,7 @@ def install_packages(venv_path, verbose=False):
     progress.finish()
 
 
-def setup_vscode(project_path, venv_path):
+def setup_vscode(project_path: Path, venv_path: Path):
     logger.info(f"Configuring VS Code for project")
     for workspace_file in glob.glob("*.code-workspace"):
         os.remove(workspace_file)
@@ -426,7 +426,7 @@ def setup_vscode(project_path, venv_path):
         json.dump(tasks, f, indent=4)
 
 
-def setup_vscode_global(code_user_path):
+def setup_vscode_global(code_user_path: Path):
     if not code_user_path.is_dir():
         return
     logger.info(f"Configuring VS Code key bindings (user level)")
@@ -453,7 +453,7 @@ def setup_vscode_global(code_user_path):
         json.dump(keybindings, f, indent=4)
 
 
-def manage_vscode_extensions(verbose=False):
+def manage_vscode_extensions(verbose: bool=False):
     logger.info(f"Managing VS Code extensions (user-level)")
     progress = ProgressBar(
         width=len(VSCODE_EXTENSIONS["install"])+len(VSCODE_EXTENSIONS["uninstall"]),
