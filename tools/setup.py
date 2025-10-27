@@ -46,7 +46,7 @@ VENV_DIR: str = "venv"
 PACKAGES: list[str] = [
     "ipykernel", "ipywidgets", "jupyterlab-latex", "matplotlib", "plotly",
     "numpy", "pandas", "scikit-learn", "func_timeout", "bpython", "mypy", "nbformat",
-    "pooch", "tqdm", "pandas-stubs", 'scipy-stubs'
+    "pooch", "tqdm", "pandas-stubs", 'scipy-stubs', 'ipympl',
 ]
 VSCODE_EXTENSIONS: dict = {
     # pinned versions are known to work with code 1.101.2
