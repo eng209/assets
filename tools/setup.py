@@ -37,24 +37,46 @@ from pathlib import Path
 
 # === Config ===
 PYTHON_VERSION: str = "3.12.2"
-DEFAULT_TARGET_FOLDER: str = os.environ.get("DEFAULT_TARGET_FOLDER", str((Path.home() / "Desktop" / "myfiles").resolve()))
+DEFAULT_TARGET_FOLDER: str = os.environ.get(
+    "DEFAULT_TARGET_FOLDER", str((Path.home() / "Desktop" / "myfiles").resolve())
+)
 SEMESTER: str = os.environ.get("SEMESTER", str(date.today().year))
-GITHUB_PROJECT: str = os.environ.get("GITHUB_PROJECT", f"https://github.com/eng209/eng209_{SEMESTER}")
+GITHUB_PROJECT: str = os.environ.get(
+    "GITHUB_PROJECT", f"https://github.com/eng209/eng209_{SEMESTER}"
+)
 CODE_ARCHIVE: str = f"{GITHUB_PROJECT}/archive/main.zip"
 COURSE_NAME: str = os.environ.get("COURSE_NAME", f"eng209_{SEMESTER}")
 VENV_DIR: str = "venv"
 PACKAGES: list[str] = [
-    "ipykernel", "ipywidgets", "jupyterlab-latex", "matplotlib", "plotly",
-    "numpy", "pandas", "scikit-learn", "func_timeout", "bpython", "mypy", "nbformat",
-    "pooch", "tqdm", "pandas-stubs", 'scipy-stubs', 'ipympl',
+    "ipykernel",
+    "ipywidgets",
+    "jupyterlab-latex",
+    "matplotlib",
+    "plotly",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "func_timeout",
+    "bpython",
+    "mypy",
+    "nbformat",
+    "pooch",
+    "tqdm",
+    "pandas-stubs",
+    "scipy-stubs",
+    "ipympl",
 ]
 VSCODE_EXTENSIONS: dict = {
     # pinned versions are known to work with code 1.101.2
     "install": [
-        "ms-python.python@2025.12.0", "ms-python.black-formatter@2025.2.0", "ms-python.mypy-type-checker@2025.2.0",
-        "ms-toolsai.jupyter@2025.7.0", "matangover.mypy@0.4.2", "jock.svg@1.5.4"
+        "ms-python.python@2025.12.0",
+        "ms-python.black-formatter@2025.2.0",
+        "ms-python.mypy-type-checker@2025.2.0",
+        "ms-toolsai.jupyter@2025.7.0",
+        "matangover.mypy@0.4.2",
+        "jock.svg@1.5.4",
     ],
-    "uninstall": ["formulahendry.code-runner"]
+    "uninstall": ["formulahendry.code-runner"],
 }
 # === ===
 
@@ -63,53 +85,52 @@ logger: logging.Logger
 
 class LogFormatter(logging.Formatter):
     SYMBOLS = {
-        logging.DEBUG: "?",   #ALT 🪲, 🐛
+        logging.DEBUG: "?",  # ALT 🪲, 🐛
         logging.INFO: "✓",
-        logging.WARNING: "!", #ALT ⚠
+        logging.WARNING: "!",  # ALT ⚠
         logging.ERROR: "✗",
-        logging.CRITICAL: "✖" #ALT 💥, 🔥
+        logging.CRITICAL: "✖",  # ALT 💥, 🔥
     }
-
 
     COLORS = {
-        logging.DEBUG:    "\033[1;90m",  # Bright black
-        logging.INFO:     "\033[1;32m",  # Green
-        logging.WARNING:  "\033[1;33m",  # Yellow
-        logging.ERROR:    "\033[1;31m",  # Red
-        logging.CRITICAL: "\033[41m\033[97m", # White on red bg
+        logging.DEBUG: "\033[1;90m",  # Bright black
+        logging.INFO: "\033[1;32m",  # Green
+        logging.WARNING: "\033[1;33m",  # Yellow
+        logging.ERROR: "\033[1;31m",  # Red
+        logging.CRITICAL: "\033[41m\033[97m",  # White on red bg
     }
     RESET = "\033[0m"
-    BOLD  = "\033[1m"
+    BOLD = "\033[1m"
 
-    def __init__(self, use_color: bool=True):
+    def __init__(self, use_color: bool = True):
         super().__init__()
         self.use_color = use_color and sys.stdout.isatty()
 
     def format(self, record) -> str:
         label = self.SYMBOLS.get(record.levelno, "?")
         message = record.getMessage()
-        prefix = ''
-        if message.startswith('\r') and sys.stdout.isatty():
-            prefix = '\r'
-        message = message.lstrip('\r')
+        prefix = ""
+        if message.startswith("\r") and sys.stdout.isatty():
+            prefix = "\r"
+        message = message.lstrip("\r")
         if self.use_color:
             color = self.COLORS.get(record.levelno, "")
             label = color + label + self.RESET
             positions = [message.find(c) for c in "(:" if c in message]
             if not positions:
-               message = self.BOLD + message + self.RESET
+                message = self.BOLD + message + self.RESET
             else:
-               pos = min(positions)
-               message = self.BOLD + message[:pos] + self.RESET + message[pos:]
-        #record.msg = f"{prefix}{label} {message}"
-        #return super().format(record)
+                pos = min(positions)
+                message = self.BOLD + message[:pos] + self.RESET + message[pos:]
+        # record.msg = f"{prefix}{label} {message}"
+        # return super().format(record)
         return f"{prefix}{label} {message}"
 
 
 class ProgressBar:
     __SPINNER = "|/-\\"
 
-    def __init__(self, width: int, fill: str='*', verbose: bool=False):
+    def __init__(self, width: int, fill: str = "*", verbose: bool = False):
         self.width = width
         self.fill = fill
         self.verbose = verbose
@@ -121,26 +142,26 @@ class ProgressBar:
             return
 
         spinner_char = self.__SPINNER[progress % len(self.__SPINNER)]
-        dots = '.' * self.width
+        dots = "." * self.width
         fill = self.fill * self.width
 
         if progress == 0:
             bar = f"   \033[90m{dots}\033[0m{spinner_char}\033[1D"
-            print(bar, end='', flush=True)
+            print(bar, end="", flush=True)
         else:
             filled_part = fill[:progress]
             empty_part = dots[progress:]
             bar = f"\r   \033[1;31m{filled_part}\033[0;90m{empty_part}\033[0m{spinner_char}\033[1D"
-            print(bar, end='', flush=True)
+            print(bar, end="", flush=True)
 
     def finish(self):
         if not (self.verbose or not self.is_terminal):
-            print('\r' + ' ' * (self.width + 5) + '\r', end='', flush=True)
+            print("\r" + " " * (self.width + 5) + "\r", end="", flush=True)
 
 
 def setup_logger() -> logging.Logger:
     logger = logging.getLogger()
-    handler = logging.StreamHandler(sys.stdout) # sys.stderr is default
+    handler = logging.StreamHandler(sys.stdout)  # sys.stderr is default
     formatter = LogFormatter(True)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
@@ -148,28 +169,35 @@ def setup_logger() -> logging.Logger:
     return logger
 
 
-def run(cmd: list[str], verbose: bool=False, **kwargs):
+def run(cmd: list[str], verbose: bool = False, **kwargs):
     check = kwargs.pop("check", True)
     if verbose or kwargs.get("capture_output"):
         return subprocess.run(cmd, check=check, text=True, **kwargs)
     else:
-        return subprocess.run(cmd, check=check, text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kwargs)
+        return subprocess.run(
+            cmd,
+            check=check,
+            text=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            **kwargs,
+        )
 
 
 def download_with_etag(url: str) -> Path:
     cache_dir = Path.home() / ".cache" / "eng209"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path = cache_dir / hashlib.sha256(url.encode()).hexdigest()
-    meta_path = cache_path.with_suffix('.meta.json')
+    meta_path = cache_path.with_suffix(".meta.json")
 
-    headers = { "User-Agent": "Client" }
+    headers = {"User-Agent": "Client"}
     if meta_path.exists():
         with open(meta_path) as f:
             meta = json.load(f)
-            if meta.get('ETag'):
-                headers['If-None-Match'] = meta['ETag']
-            if meta.get('Last-Modified'):
-                headers['If-Modified-Since'] = meta['Last-Modified']
+            if meta.get("ETag"):
+                headers["If-None-Match"] = meta["ETag"]
+            if meta.get("Last-Modified"):
+                headers["If-Modified-Since"] = meta["Last-Modified"]
 
     request = urllib.request.Request(url, headers=headers)
     try:
@@ -180,16 +208,16 @@ def download_with_etag(url: str) -> Path:
 
             logger.debug(f"Downloading: {url}")
             data = response.read()
-            with open(cache_path, 'wb') as f:
+            with open(cache_path, "wb") as f:
                 f.write(data)
 
             # Save headers for next time
             response_meta = {
-                'Url' : url,
-                'ETag': response.headers.get('ETag'),
-                'Last-Modified': response.headers.get('Last-Modified'),
+                "Url": url,
+                "ETag": response.headers.get("ETag"),
+                "Last-Modified": response.headers.get("Last-Modified"),
             }
-            with open(meta_path, 'w') as f:
+            with open(meta_path, "w") as f:
                 json.dump(response_meta, f)
 
             return cache_path
@@ -210,7 +238,13 @@ def download_github_zip(url: str) -> Path:
         raise RuntimeError(f"Download failed: {url}\n{e}")
 
 
-def extract_archive(path: Path, extract_to: Path, overwrite: bool=False, verbose: bool=False, force_overwrite: set[str]={"update.py"}):
+def extract_archive(
+    path: Path,
+    extract_to: Path,
+    overwrite: bool = False,
+    verbose: bool = False,
+    force_overwrite: set[str] = {"update.py"},
+):
     logger.info(f"Extract class materials: {extract_to}")
     if extract_to.exists():
         if overwrite:
@@ -218,10 +252,10 @@ def extract_archive(path: Path, extract_to: Path, overwrite: bool=False, verbose
         else:
             logger.warning(f"Existing files are not updated (use --force)")
 
-    with zipfile.ZipFile(str(path), 'r') as zip_ref:
+    with zipfile.ZipFile(str(path), "r") as zip_ref:
         members = zip_ref.infolist()
-        root_prefix = members[0].filename.split('/')[0] + '/'
-        progress = ProgressBar(width=10, fill='*', verbose=verbose)
+        root_prefix = members[0].filename.split("/")[0] + "/"
+        progress = ProgressBar(width=10, fill="*", verbose=verbose)
         progress.update(0)
 
         for i, member in enumerate(members, 1):
@@ -231,9 +265,13 @@ def extract_archive(path: Path, extract_to: Path, overwrite: bool=False, verbose
             member_relpath = os.path.relpath(member.filename, root_prefix)
             target_path = os.path.join(extract_to, member_relpath)
 
-            if overwrite or not os.path.exists(target_path) or member_relpath in force_overwrite:
+            if (
+                overwrite
+                or not os.path.exists(target_path)
+                or member_relpath in force_overwrite
+            ):
                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                with open(target_path, 'wb') as f:
+                with open(target_path, "wb") as f:
                     f.write(zip_ref.read(member))
             else:
                 logger.debug(f"Skipped existing file: {target_path}")
@@ -243,9 +281,11 @@ def extract_archive(path: Path, extract_to: Path, overwrite: bool=False, verbose
         progress.finish()
 
 
-def git_clone_with_retries(url: str, dest: Path, timeout: int=15, verbose: bool=False, deep: bool=False):
+def git_clone_with_retries(
+    url: str, dest: Path, timeout: int = 15, verbose: bool = False, deep: bool = False
+):
     logger.info(f"Cloning project: {url}")
-    progress = ProgressBar(width=timeout, fill='X', verbose=verbose)
+    progress = ProgressBar(width=timeout, fill="X", verbose=verbose)
     start = time.time()
     i = 0
     while time.time() - start < timeout:
@@ -253,7 +293,10 @@ def git_clone_with_retries(url: str, dest: Path, timeout: int=15, verbose: bool=
             if deep:
                 run(["git", "clone", url, str(dest)], verbose=verbose)
             else:
-                run(["git", "clone", "--depth", "1", "--single-branch", url, str(dest)], verbose=verbose)
+                run(
+                    ["git", "clone", "--depth", "1", "--single-branch", url, str(dest)],
+                    verbose=verbose,
+                )
             return
         except subprocess.CalledProcessError:
             i += 1
@@ -269,12 +312,14 @@ def verify_python(required_version_str: str):
     current_major, current_minor = sys.version_info[:2]
 
     if (current_major, current_minor) != (required_major, required_minor):
-        raise RuntimeError(f"Python {required_major}.{required_minor} required, found {current_major}.{current_minor}")
+        raise RuntimeError(
+            f"Python {required_major}.{required_minor} required, found {current_major}.{current_minor}"
+        )
 
     logger.info(f"Python OK: {current_major}.{current_minor}")
 
 
-def verify_vscode(verbose: bool=False) -> bool:
+def verify_vscode(verbose: bool = False) -> bool:
     try:
         output = run(["code", "--version"], capture_output=True).stdout.strip()
         logger.info(f"VS Code OK: {output.splitlines()[0]}")
@@ -284,7 +329,7 @@ def verify_vscode(verbose: bool=False) -> bool:
         return False
 
 
-def verify_git(verbose: bool=False) -> bool:
+def verify_git(verbose: bool = False) -> bool:
     try:
         output = run(["git", "--version"], capture_output=True).stdout.strip()
         logger.info(f"GIT OK: {output.splitlines()[0]}")
@@ -297,28 +342,33 @@ def verify_git(verbose: bool=False) -> bool:
 def create_virtualenv(parent_path: Path) -> Path:
     venv_path = parent_path / VENV_DIR
     (venv_path / "lib64").mkdir(parents=True, exist_ok=True)
-    builder = venv.EnvBuilder(with_pip=True, clear=False, upgrade_deps=True, symlinks=False)
+    builder = venv.EnvBuilder(
+        with_pip=True, clear=False, upgrade_deps=True, symlinks=False
+    )
     logger.info(f"Creating venv: {venv_path}")
     builder.create(str(venv_path))
     return venv_path
 
 
-def install_packages(venv_path: Path, verbose: bool=False):
+def install_packages(venv_path: Path, verbose: bool = False):
     venv_bin = venv_path / ("Scripts" if os.name == "nt" else "bin")
     pip_path = venv_bin / "pip"
     logger.info(f"Installing Python packages to venv")
-    progress = ProgressBar(width=len(PACKAGES), fill='*', verbose=verbose)
+    progress = ProgressBar(width=len(PACKAGES), fill="*", verbose=verbose)
     progress.update(0)
     for i, pkg in enumerate(PACKAGES, 1):
-        run([str(pip_path), "install", "--require-virtualenv", "--no-input", pkg], verbose=verbose)
+        run(
+            [str(pip_path), "install", "--require-virtualenv", "--no-input", pkg],
+            verbose=verbose,
+        )
         progress.update(i)
     # -- Give a custom display name to the python jupyter kernel
     # python_path = venv_bin / "python3.12"
     # run([str(python_path),
-        # f"-m", "ipykernel", "install",
-        # f"--prefix={venv_path}",
-        # f"--name=eng209-venv",
-        # f"--display-name=Python3.12 ENG209 venv",
+    # f"-m", "ipykernel", "install",
+    # f"--prefix={venv_path}",
+    # f"--name=eng209-venv",
+    # f"--display-name=Python3.12 ENG209 venv",
     # ], verbose=verbose)
     progress.finish()
 
@@ -329,9 +379,12 @@ def setup_vscode(project_path: Path, venv_path: Path):
         os.remove(workspace_file)
     vscode_dir = project_path / ".vscode"
     vscode_dir.mkdir(parents=True, exist_ok=True)
-    venv_subpath = venv_path.relative_to(project_path) if venv_path.is_relative_to(project_path) else venv_path
+    venv_subpath = (
+        venv_path.relative_to(project_path)
+        if venv_path.is_relative_to(project_path)
+        else venv_path
+    )
     venv_bin = venv_subpath / ("Scripts" if os.name == "nt" else "bin")
-
 
     settings = {
         "workbench.editor.showTabs": "multiple",
@@ -339,19 +392,21 @@ def setup_vscode(project_path: Path, venv_path: Path):
         # -- Specify a different default .env path for env variables
         # "python.envFile": (Path("${workspaceFolder}") / ".env").as_posix(),
         # -- Specify a default python interpreter
-        "python.venvFolders": [ "venv" ],
+        "python.venvFolders": ["venv"],
         # -- Specify a default python interpreter
-        "python.defaultInterpreterPath": str(Path("${workspaceFolder}") / venv_bin / "python"),
+        "python.defaultInterpreterPath": str(
+            Path("${workspaceFolder}") / venv_bin / "python"
+        ),
         # -- Include the venv python kernels specs under jupyter kernels, using the custom display name
         #    (Note: even if not set it is listed in python environments as python3..., which less ambiguous).
-        #"jupyter.jupyterServerKernelSearchPaths": [
-            #"${workspaceFolder}/venv/share/jupyter/kernels",
-        #],
+        # "jupyter.jupyterServerKernelSearchPaths": [
+        # "${workspaceFolder}/venv/share/jupyter/kernels",
+        # ],
         # -- Limit environments so that it does not include others like global conda etc.
         # -- requires: ms-python.vscode-python-environment-manager
         # "python-envs.pythonProjects": [
         #    { "path": "eng209_2025", "envManager": "ms-python.python:venv", "packageManager": "ms-python.python:pip" }
-        #],
+        # ],
         # -- Experimental vscode A/B testing is enabled by default, turn it off
         "python.experiments.enabled": False,
         # -- Activate environment when terminal is opened, but do not change it in existing terminals
@@ -416,10 +471,10 @@ def setup_vscode(project_path: Path, venv_path: Path):
                     "focus": True,
                     "showReuseMessage": True,
                     "echo": False,
-                    "panel": "dedicated"
-                }
+                    "panel": "dedicated",
+                },
             }
-        ]
+        ],
     }
 
     with open(vscode_dir / "tasks.json", "w") as f:
@@ -430,41 +485,40 @@ def setup_vscode_global(code_user_path: Path):
     if not code_user_path.is_dir():
         return
     logger.info(f"Configuring VS Code key bindings (user level)")
-    keybindings_path = code_user_path / 'keybindings.json'
+    keybindings_path = code_user_path / "keybindings.json"
     if keybindings_path.exists():
         keybindings_path.unlink()
     keybindings = [
-        {
-            "key": "ctrl+j",
-            "command": "-workbench.action.togglePanel"
-        },
+        {"key": "ctrl+j", "command": "-workbench.action.togglePanel"},
         {
             "key": "ctrl+i",
             "command": "workbench.action.tasks.runTask",
-            "args": "bpython"
+            "args": "bpython",
         },
         {
             "key": "ctrl+j",
             "command": "workbench.action.tasks.runTask",
-            "args": "jupyter"
-        }
+            "args": "jupyter",
+        },
     ]
     with open(keybindings_path, "w") as f:
         json.dump(keybindings, f, indent=4)
 
 
-def manage_vscode_extensions(verbose: bool=False):
+def manage_vscode_extensions(verbose: bool = False):
     logger.info(f"Managing VS Code extensions (user-level)")
     progress = ProgressBar(
-        width=len(VSCODE_EXTENSIONS["install"])+len(VSCODE_EXTENSIONS["uninstall"]),
-        fill='*', verbose=verbose)
+        width=len(VSCODE_EXTENSIONS["install"]) + len(VSCODE_EXTENSIONS["uninstall"]),
+        fill="*",
+        verbose=verbose,
+    )
     i = 0
     fail_install = []
     progress.update(i)
     for ext in VSCODE_EXTENSIONS["install"]:
         try:
             if "@" in ext:
-                run(["code", "--install-extension", ext ], verbose=verbose)
+                run(["code", "--install-extension", ext], verbose=verbose)
             else:
                 run(["code", "--install-extension", ext, "--force"], verbose=verbose)
             time.sleep(0.5)
@@ -489,14 +543,36 @@ def manage_vscode_extensions(verbose: bool=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Initialize and configure the ENG209 programming environment")
-    parser.add_argument("--base", metavar="PATH", type=Path,
+    parser = argparse.ArgumentParser(
+        description="Initialize and configure the ENG209 programming environment"
+    )
+    parser.add_argument(
+        "--base",
+        metavar="PATH",
+        type=Path,
         help=f"Directory where the class folder will be created (default: {os.environ.get('ENG209_DIR', DEFAULT_TARGET_FOLDER)})",
-        default=os.environ.get("ENG209_DIR", DEFAULT_TARGET_FOLDER))
-    parser.add_argument("--clone", action="store_true", help="Shallow clone (main branch). Default is to copy from github archive.")
-    parser.add_argument("--deep-clone", action="store_true", help="Full clone (all branches, full history)")
-    parser.add_argument("--force", action="store_true", help="Force overwrite when copying from archive (ignored with --clone/--deep-clone)")
-    parser.add_argument("--verbose", action="store_true", help="Show verbose output of subprocess commands.")
+        default=os.environ.get("ENG209_DIR", DEFAULT_TARGET_FOLDER),
+    )
+    parser.add_argument(
+        "--clone",
+        action="store_true",
+        help="Shallow clone (main branch). Default is to copy from github archive.",
+    )
+    parser.add_argument(
+        "--deep-clone",
+        action="store_true",
+        help="Full clone (all branches, full history)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force overwrite when copying from archive (ignored with --clone/--deep-clone)",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show verbose output of subprocess commands.",
+    )
     args = parser.parse_args()
 
     global logger
@@ -510,15 +586,22 @@ def main():
         raise RuntimeError(f"Target folder {args.base} does not exist")
     logger.info(f"Base folder OK: {args.base}")
 
-    course_path = args.base / COURSE_NAME
+    course_path = (args.base / COURSE_NAME).resolve()
 
     if args.clone or args.deep_clone:
         if not (course_path / ".git").is_dir():
             if not has_git:
                 raise RuntimeError(f"git command not found, cannot clone project")
             if course_path.exists():
-                raise RuntimeError(f"cannot clone ({course_path} exists and is not a git repository)")
-            git_clone_with_retries(GITHUB_PROJECT + ".git", course_path, verbose=args.verbose, deep=args.deep_clone)
+                raise RuntimeError(
+                    f"cannot clone ({course_path} exists and is not a git repository)"
+                )
+            git_clone_with_retries(
+                GITHUB_PROJECT + ".git",
+                course_path,
+                verbose=args.verbose,
+                deep=args.deep_clone,
+            )
         else:
             logger.info(f"Using existing project: {course_path}")
 
@@ -529,26 +612,48 @@ def main():
             try:
                 # run(["git", "pull"], verbose=args.verbose)
                 # 1. Stash local changes if any
-                run(["git", "stash", "push", "-m", "autostash before update"], verbose=args.verbose)
+                run(
+                    ["git", "stash", "push", "-m", "autostash before update"],
+                    verbose=args.verbose,
+                )
                 # 2. Fetch tags (!moved tags are not updated)
                 run(["git", "fetch", "--tags"], verbose=args.verbose)
                 # 3. Fetch latest from origin
                 run(["git", "fetch", "origin"], verbose=args.verbose)
                 # 4. Reset current branch to match remote (remote wins)
-                current_branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True).stdout.strip()
-                run(["git", "reset", "--hard", f"origin/{current_branch}"], verbose=args.verbose)
+                current_branch = run(
+                    ["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True
+                ).stdout.strip()
+                run(
+                    ["git", "reset", "--hard", f"origin/{current_branch}"],
+                    verbose=args.verbose,
+                )
                 # 5. Apply stashed changes if possible
-                stash_result = run(["git", "stash", "pop"], verbose=args.verbose, capture_output=True, check=False)
-                if 'conflict' in stash_result.stdout.lower() or 'conflict' in stash_result.stderr.lower():
-                    raise RuntimeError("Merge conflict occurred while applying stashed changes")
+                stash_result = run(
+                    ["git", "stash", "pop"],
+                    verbose=args.verbose,
+                    capture_output=True,
+                    check=False,
+                )
+                if (
+                    "conflict" in stash_result.stdout.lower()
+                    or "conflict" in stash_result.stderr.lower()
+                ):
+                    raise RuntimeError(
+                        "Merge conflict occurred while applying stashed changes"
+                    )
             except Exception as e:
                 logger.error(f"Update failed: {e}")
-                logger.error("Your local changes may still be stashed. Resolve conflicts manually if needed.")
+                logger.error(
+                    "Your local changes may still be stashed. Resolve conflicts manually if needed."
+                )
         else:
             logger.warning("Git command not found, cannot update existing git project")
     else:
         archive_file = download_github_zip(CODE_ARCHIVE)
-        extract_archive(archive_file, course_path, overwrite=args.force, verbose=args.verbose)
+        extract_archive(
+            archive_file, course_path, overwrite=args.force, verbose=args.verbose
+        )
         os.chdir(course_path)
 
     venv_path = create_virtualenv(course_path)
@@ -565,14 +670,18 @@ def main():
     update_script = course_path / f"update.py"
     if update_script.exists():
         logger.info("Running post-install update")
-        python_path = (venv_path / "Scripts" / "python3.exe") if os.name == "nt" else (venv_path / "bin" / "python3")
-        run([ python_path, update_script ], verbose=args.verbose)
+        python_path = (
+            (venv_path / "Scripts" / "python3.exe")
+            if os.name == "nt"
+            else (venv_path / "bin" / "python3")
+        )
+        run([python_path, update_script], verbose=args.verbose)
 
     if has_vscode:
         logger.info("Launching VS Code...")
         run(["code", str(course_path)], verbose=args.verbose)
 
-    logger.info("Project setup complete...") # ✅
+    logger.info("Project setup complete...")  # ✅
     logger.info("You're ready to start coding! 🚀")
 
 
@@ -586,4 +695,3 @@ if __name__ == "__main__":
     except Exception as e:
         logger.critical(f"Error: {e}")
         sys.exit(1)
-
