@@ -65,6 +65,7 @@ PACKAGES: list[str] = [
     "pandas-stubs",
     "scipy-stubs",
     "ipympl",
+    "git+https://github.com/microsoft/python-type-stubs.git",
 ]
 VSCODE_EXTENSIONS: dict = {
     # pinned versions are known to work with code 1.101.2
