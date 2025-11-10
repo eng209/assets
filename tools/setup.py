@@ -53,6 +53,7 @@ PACKAGES: list[str] = [
     "jupyterlab-latex",
     "matplotlib",
     "plotly",
+    "plotly-stubs",
     "numpy",
     "pandas",
     "scikit-learn",
